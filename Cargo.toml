@@ -1,0 +1,31 @@
+[package]
+name = "magicmtn-provider-firecracker"
+version = "0.1.0"
+edition = "2024"
+license = "Apache-2.0"
+description = "Local Firecracker microVM sandbox provider for MagicMtn"
+
+readme = "README.md"
+include = [
+    "src/**/*.rs",
+    "src/**/*.py",
+    "tests/**/*.rs",
+    "tests/**/*.py",
+    "Cargo.toml",
+    "Cargo.lock",
+    "README.md",
+    "CONTRIBUTING.md",
+    "AGENTS.md",
+    ".cargo/config.toml.example",
+    "LICENSE",
+    "package.sh",
+    "USAGE.md",
+    ".github/assets/*.svg",
+]
+
+[dependencies]
+magicmtn-sdk = "0.1.0"
+magicmtn-provider-framework = "0.1.0"
+anyhow = "1"
+serde_json = "1"
+tokio = { version = "1", features = ["process", "io-util", "macros", "rt"] }

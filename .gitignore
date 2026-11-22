@@ -1,0 +1,5 @@
+/target/
+/dist/
+/.cargo/*
+!/.cargo/config.toml.example
+__pycache__/
