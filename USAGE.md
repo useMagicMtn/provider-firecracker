@@ -35,7 +35,7 @@ Read the Canonical manifests for your installation:
 magic --local images list --format json
 ```
 
-Set `images.canonical.reference` to the Canonical repository and digest for your Linux host's architecture, joined as `REPOSITORY@DIGEST`. Set `platform` to the corresponding `linux/amd64` or `linux/arm64` value. Use the kernel and ext4 root filesystem you prepared from that Canonical image. Include Python 3, Pi, `/opt/magicmtn/runtime`, and a writable `/computer` directory in the guest, along with SSH and `timeout`.
+Set `images.canonical.reference` to the Canonical repository and digest for your Linux host's architecture, joined as `REPOSITORY@DIGEST`. Set `platform` to the corresponding `linux/amd64` or `linux/arm64` value. Use the kernel and ext4 root filesystem you prepared from that Canonical image. Include Python 3, Pi, `/opt/magicmtn/runtime`, and a writable `/computer` directory in the guest, along with SSH and GNU Coreutils `timeout`.
 
 Export the configuration path before starting MagicMtn:
 
@@ -63,4 +63,4 @@ export MAGICMTN_FIRECRACKER_IMAGES='{"registry.example/sandbox@sha256:0123456789
 
 MagicMtn sends templates as `image:<OCI reference>|<session UUID>`. The provider looks up the image reference and starts the prepared kernel/rootfs; it does not pull that OCI image or verify the rootfs against its digest. The operator must ensure the prepared filesystem contains the matching workload. Preserve image mappings for sessions and releases still in use.
 
-The guest needs a working SSH server, a shell, and `timeout` with support for `-k`. Include the MagicMtn sandbox agent and all of its dependencies for Pi sessions. Creation waits up to 60 seconds for successful SSH execution of `true`; it does not verify agent readiness or workspace permissions. Validate those separately in a real session.
+The guest needs a working SSH server, a shell, and GNU Coreutils `timeout` with support for `-k`. Include the MagicMtn sandbox agent and all of its dependencies for Pi sessions. Creation waits up to 60 seconds for successful SSH execution of `true`; it does not verify agent readiness or workspace permissions. Validate those separately in a real session.

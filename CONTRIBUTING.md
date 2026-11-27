@@ -48,7 +48,7 @@ cargo clippy --locked --all-targets -- -D warnings
 python3 -m unittest discover -s tests -v
 ```
 
-The Python suite covers state cleanup, missing/stopped distinctions, PID reuse, path validation, output limits, and subprocess timeouts. These checks do not boot a VM. The Rust crate currently has no unit tests; `cargo test` checks compilation and doc tests.
+The Python suite covers state cleanup, missing/stopped distinctions, PID reuse, path validation, output limits, and subprocess timeouts. These checks do not boot a VM. The Rust discovery integration test checks that image preparation is advertised without host configuration; `cargo test` also checks compilation and doc tests.
 
 For lifecycle, networking, or execution changes, also validate on a prepared Linux/KVM host through the compiled RPC executable: create a VM, check status, execute literal arguments, exercise output and timeout limits, restart the provider and reconnect to saved state, then terminate and confirm the process, state directory, and slot are released. Exercise a real MagicMtn agent session when changing its guest requirements. Report live validation separately from unit checks.
 
@@ -58,7 +58,7 @@ Build on the Linux architecture you intend to distribute:
 
 ```sh
 ./package.sh
-magic provider install --file dist/firecracker-0.1.0-linux-x86_64.tar.gz
+magic provider install --file dist/firecracker-0.2.0-linux-x86_64.tar.gz
 ```
 
 Use the archive matching your version and architecture. Packaging needs Python 3.11+ for `tomllib`. It produces `dist/firecracker-<version>-<os>-<arch>.tar.gz`, containing `provider`, `package.json`, and `LICENSE`. The manifest records protocol version 1 and the executable's SHA-256 checksum. Firecracker, Python, OpenSSH, kernels, root filesystems, keys, and host network configuration remain external prerequisites.

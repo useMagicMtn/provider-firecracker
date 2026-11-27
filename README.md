@@ -13,7 +13,7 @@ Run MagicMtn sandboxes in local Linux microVMs with [Firecracker](https://github
 
 Use a Linux host with a user-installed Firecracker binary, read/write access to `/dev/kvm`, Python 3.9+ with `os.pidfd_open` and `signal.pidfd_send_signal`, and an OpenSSH client.
 
-Prepare a compatible Linux kernel, an ext4 root filesystem with SSH and `timeout`, and one TAP network slot per concurrent VM. For MagicMtn Pi sessions, the guest also needs the MagicMtn sandbox agent and its dependencies. The provider does not install Firecracker, download or convert images, or configure host networking.
+Prepare a compatible Linux kernel, an ext4 root filesystem with SSH and GNU Coreutils `timeout`, and one TAP network slot per concurrent VM. For MagicMtn Pi sessions, the guest also needs the MagicMtn sandbox agent and its dependencies. The provider does not install Firecracker, download or convert images, or configure host networking.
 
 ## Installation and configuration
 
