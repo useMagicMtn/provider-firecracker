@@ -5,7 +5,14 @@ async fn main() -> anyhow::Result<()> {
     magicmtn_provider_framework::run_sandbox(
         "firecracker",
         env!("CARGO_PKG_VERSION"),
-        Capabilities::sandbox(vec![Create, Status, Terminate, Exec, ExecBounded]),
+        Capabilities::sandbox(vec![
+            PrepareImage,
+            Create,
+            Status,
+            Terminate,
+            Exec,
+            ExecBounded,
+        ]),
         Firecracker,
     )
     .await

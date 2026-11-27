@@ -26,21 +26,22 @@ magic provider install firecracker
 Set these variables in the environment of the process running the provider:
 
 - `MAGICMTN_FIRECRACKER_CONFIG`: absolute path to a private JSON file describing Firecracker, prepared images, and network slots.
-- `MAGICMTN_FIRECRACKER_IMAGES`: JSON map from exact OCI image references with digests to prepared image labels in that file.
+- `MAGICMTN_FIRECRACKER_IMAGES`: optional JSON map from exact OCI image references with digests to prepared image labels in that file. You can instead record the image reference in the configuration entry.
 
-See [the configuration example](USAGE.md#host-and-guest-configuration) for the file format and guest requirements. Set up the host and images before creating a sandbox. Start a sandbox from an OCI digest mapped in `MAGICMTN_FIRECRACKER_IMAGES`.
+See [the configuration example](USAGE.md#host-and-guest-configuration) for the file format and guest requirements. Set up the host and images before creating a sandbox. Prepare Canonical for the configured host, then start a sandbox using the default image.
 
 ```sh
-magic sandbox new --provider firecracker --image MAPPED_OCI_DIGEST_REFERENCE
-magic sandbox exec SANDBOX_ID -- /bin/echo hello
-magic sandbox terminate SANDBOX_ID --yes
+magic images prepare canonical --provider firecracker
+magic computer new --provider firecracker
+magic computer exec SANDBOX_ID -- /bin/echo hello
+magic computer terminate SANDBOX_ID --yes
 ```
 
-Substitute your full mapped OCI image reference and the returned sandbox ID.
+Substitute the returned sandbox ID.
 
 ## Runtime behavior
 
-The provider supports creation, status, termination, and bounded command execution. Each VM receives two vCPUs, 2 GiB of memory, and a private copy of its root disk. Interactive SSH and SCP operations are not advertised by the provider; command execution uses SSH internally.
+The provider supports prepared-image validation, creation, status, termination, and bounded command execution. Each VM receives two vCPUs, 2 GiB of memory, and a private copy of its root disk. Interactive SSH and SCP operations are not advertised by the provider; command execution uses SSH internally.
 
 Firecracker runs directly as the host user without a jailer. This configuration is intended for personal local workloads on a trusted host. Host routing, NAT, DNS, and isolation are operator responsibilities. Review Firecracker's [production host guidance](https://github.com/firecracker-microvm/firecracker/blob/main/docs/prod-host-setup.md) before choosing a deployment environment.
 

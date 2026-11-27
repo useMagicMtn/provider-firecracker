@@ -3,6 +3,8 @@ import fcntl
 import http.client
 import json
 import os
+import platform
+import re
 from pathlib import Path
 import select
 import shlex
@@ -100,8 +102,54 @@ def ssh(record, argv, timeout, limit):
             'truncated': truncated, 'elapsed_ms': int((time.monotonic() - start) * 1000)}
 
 
+def prepare_image(images, config):
+    architectures = {'x86_64': 'amd64', 'aarch64': 'arm64', 'arm64': 'arm64'}
+    architecture = architectures.get(platform.machine())
+    if architecture is None:
+        raise ValueError('unsupported Firecracker host architecture')
+    host_platform = 'linux/' + architecture
+    image = images.get(host_platform)
+    if not isinstance(image, dict):
+        raise ValueError('image has no manifest for ' + host_platform)
+    repository, digest = image.get('repository'), image.get('digest')
+    if not isinstance(repository, str) or not repository or not isinstance(digest, str) or not re.fullmatch(r'sha256:[0-9a-f]{64}', digest):
+        raise ValueError('an immutable OCI image reference is required')
+    reference = repository + '@' + digest
+    mapping = json.loads(os.environ.get('MAGICMTN_FIRECRACKER_IMAGES', '{}'))
+    if not isinstance(mapping, dict):
+        raise ValueError('image mappings must be a JSON object')
+    definitions = config.get('images', {})
+    label = mapping.get(reference)
+    if label is None:
+        matches = [name for name, definition in definitions.items()
+                   if definition.get('reference') == reference]
+        if len(matches) != 1:
+            raise ValueError('configure one prepared kernel/rootfs with the requested image reference')
+        label = matches[0]
+    if not isinstance(label, str) or not label or len(label) > 512 or label not in definitions:
+        raise ValueError('image mapping must name a configured prepared image')
+    definition = definitions[label]
+    if definition.get('reference', reference) != reference:
+        raise ValueError('prepared image reference differs from the requested digest')
+    if definition.get('platform', host_platform) != host_platform:
+        raise ValueError('prepared image platform differs from the host')
+    for name in ('kernel', 'rootfs'):
+        path = Path(definition[name])
+        if not path.is_absolute() or not path.is_file() or not os.access(path, os.R_OK):
+            raise ValueError('prepared ' + name + ' must be an absolute, readable file')
+    with Path(definition['rootfs']).open('rb') as rootfs:
+        rootfs.seek(1024 + 56)
+        if rootfs.read(2) != b'\x53\xef':
+            raise ValueError('prepared rootfs must contain an ext4 filesystem')
+    mapping[reference] = label
+    return {'image': image, 'platform': host_platform, 'artifact': label,
+            'configuration': {'MAGICMTN_FIRECRACKER_IMAGES': json.dumps(mapping)}}
+
+
 def dispatch(request, config, root):
     op = request['op']
+    if op == 'prepare_image':
+        return prepare_image(request['images'], config)
     if op == 'create':
         if not os.access('/dev/kvm', os.R_OK | os.W_OK):
             raise RuntimeError('install Firecracker and grant this user access to /dev/kvm first')

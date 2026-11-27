@@ -2,6 +2,7 @@
 use anyhow::{Context, Result, ensure};
 use magicmtn_sdk::{
     BoxFuture, ExecResult, ProviderSandbox, SandboxBackend, SandboxState, ScpDirection,
+    image_registry::{Image, PreparedImage},
 };
 use serde_json::{Value, json};
 use std::{path::Path, process::Stdio};
@@ -35,6 +36,17 @@ async fn invoke(operation: Value) -> Result<Value> {
     Ok(serde_json::from_slice(&output.stdout)?)
 }
 impl SandboxBackend for Firecracker {
+    fn prepare_image<'a>(
+        &'a self,
+        images: &'a std::collections::BTreeMap<String, Image>,
+    ) -> BoxFuture<'a, PreparedImage> {
+        Box::pin(async move {
+            Ok(serde_json::from_value(
+                invoke(json!({"op":"prepare_image", "images":images})).await?,
+            )?)
+        })
+    }
+
     fn create<'a>(&'a self, template: &'a str) -> BoxFuture<'a, ProviderSandbox> {
         Box::pin(async move {
             Ok(serde_json::from_value(
